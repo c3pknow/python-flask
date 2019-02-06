@@ -1,5 +1,5 @@
 from flask import Flask, request, render_template, flash, redirect, url_for, session, logging
-from data import Articles
+#from data import Articles
 from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 # from flaskext.mysql import MySQL
 from passlib.hash import sha256_crypt
@@ -16,7 +16,7 @@ db = Database()
 # Initialize MySQL
 #mysql = MySQL(app)
 
-Articles = Articles()
+#Articles = Articles()
 
 @app.route('/')
 def index():
@@ -28,11 +28,17 @@ def about():
 
 @app.route('/articles')
 def articles():
-    return render_template('articles.htm', articles = Articles)
+    articles = db.get_articles()
+    if len(articles) > 0:
+        return render_template('articles.htm', articles=articles)
+    else:
+        return render_template('articles.htm', msg='No articles found.')
+
 
 @app.route('/articles/<string:id>/')
 def article(id):
-    return render_template('article.htm', id=id)
+    article = db.get_article(id)
+    return render_template('article.htm', article=article)
 
 
 
@@ -112,10 +118,38 @@ def is_logged_in(f):
 @app.route('/dashboard')
 @is_logged_in
 def dashboard():
-    return render_template('dashboard.htm')
+    articles = db.get_articles()
+    if len(articles) > 0:
+        return render_template('dashboard.htm', articles=articles)
+    else:
+        return render_template('dashboard.htm', msg='No articles found.')
 
+
+
+
+class ArticleForm(Form):
+    title = StringField('Title', [validators.Length(min=1, max=200)])
+    body = TextAreaField('Body', [validators.Length(min=30)])
+
+
+@app.route('/add_article', methods=['GET', 'POST'])
+@is_logged_in
+def add_article():
+    form = ArticleForm(request.form)
+
+    if request.method == 'POST' and form.validate():
+        title = form.title.data
+        body = form.body.data
+
+        db.add_article(title, body, session['username'])
+        flash('Article created successfully.', 'success')
+
+        return redirect(url_for('dashboard'))
+
+    return render_template('add_article.htm', form=form)
 
 @app.route('/logout')
+@is_logged_in
 def logout():
     session.clear()
     flash('You are now logged out', 'success')

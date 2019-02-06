@@ -22,4 +22,22 @@ class Database:
 
         if result > 0:
             return self.cur.fetchone()
-            
+    
+    def add_article(self, title, body, author):
+        try:
+            self.cur.execute("INSERT INTO articles(title, body, author) VALUES(%s, %s, %s)", (title, body, author))
+            self.con.commit()
+        except:
+            print("ERROR!!!!!!!!!!!!!!!!!!!")
+        
+    def get_articles(self):
+        result = self.cur.execute('SELECT * FROM articles')
+        articles = self.cur.fetchall()
+
+        return articles
+
+    def get_article(self, id):
+        result = self.cur.execute('SELECT * FROM articles WHERE id = %s', [id])
+        article = self.cur.fetchone()
+
+        return article
