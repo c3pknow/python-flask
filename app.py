@@ -65,6 +65,27 @@ def register():
     return render_template('register.htm', form=form)
 
 
+# User Login
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password_candidate = request.form['password']
+
+        result = db.get_user_by_username(username)
+
+        if result is None:
+            app.logger.info('No user record found')
+        else:
+            password = result['password']
+
+            if sha256_crypt.verify(password_candidate, password):
+                app.logger.info('Password matched')
+
+
+    return render_template('login.htm')
+
+
 if __name__ == '__main__':
     app.secret_key = 'secret1234567654321'
     app.run()

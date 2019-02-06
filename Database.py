@@ -17,3 +17,9 @@ class Database:
         except:
             print("ERROR!!!!!!!!!!!!!!!!!!!")
         
+    def get_user_by_username(self, username):
+        result = self.cur.execute('SELECT * FROM users WHERE username = %s', [username])
+
+        if result > 0:
+            return self.cur.fetchone()
+            
