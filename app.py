@@ -148,6 +148,37 @@ def add_article():
 
     return render_template('add_article.htm', form=form)
 
+
+@app.route('/edit_article/<string:id>', methods=['GET', 'POST'])
+@is_logged_in
+def edit_article(id):
+    article = db.get_article(id)
+
+    form = ArticleForm(request.form)
+
+    form.title.data = article['title']
+    form.body.data = article['body']
+    
+    if request.method == 'POST' and form.validate():
+        title = request.form['title']
+        body = request.form['body']
+
+        db.edit_article(id, title, body)
+        flash(f'Article {id} updated successfully.', 'success')
+
+        return redirect(url_for('dashboard'))
+
+    return render_template('edit_article.htm', form=form)
+
+
+@app.route('/delete_article/<string:id>', methods=['POST'])
+@is_logged_in
+def delete_article(id):
+    article = db.delete_article(id)
+
+    flash(f'Article {id} deleted successfully.', 'success')
+    return redirect(url_for('dashboard'))
+
 @app.route('/logout')
 @is_logged_in
 def logout():

@@ -29,6 +29,20 @@ class Database:
             self.con.commit()
         except:
             print("ERROR!!!!!!!!!!!!!!!!!!!")
+
+    def edit_article(self, id, title, body):
+        try:
+            self.cur.execute("UPDATE articles SET title=%s, body=%s WHERE id=%s", (title, body, id))
+            self.con.commit()
+        except:
+            print(f"ERROR Updating article {id}!!!!!!!!!!!!!!!!!!!")
+
+    def delete_article(self, id):
+        try:
+            self.cur.execute("DELETE FROM articles WHERE id=%s", (id))
+            self.con.commit()
+        except:
+            print(f"ERROR Deleting article {id}!!!!!!!!!!!!!!!!!!!")
         
     def get_articles(self):
         result = self.cur.execute('SELECT * FROM articles')
