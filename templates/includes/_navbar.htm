@@ -17,8 +17,19 @@
             </li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
+            
             <li class="nav-item">
-                <a class="nav-link" href="/register">Register</a>
+              {% if not session.is_logged_in %}
+                <li class="nav-item">
+                    <a class="nav-link" href="/register">Register</a>
+                </li>
+                <li>
+                  <a class="nav-link" href="/login">Login</a>
+                </li>
+              {% else %}
+                <li><a class="nav-link" href="/dashboard">Dashboard</a></li>
+                <li><a class="nav-link" href="/logout">Logout</a></li>
+              {% endif %}
             </li>
           </ul>
           <form class="form-inline my-2 my-lg-0">

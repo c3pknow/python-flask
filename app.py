@@ -4,7 +4,7 @@ from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 # from flaskext.mysql import MySQL
 from passlib.hash import sha256_crypt
 from Database import Database
-
+from functools import wraps
 
 
 app = Flask(__name__)
@@ -75,15 +75,52 @@ def login():
         result = db.get_user_by_username(username)
 
         if result is None:
-            app.logger.info('No user record found')
+            app.logger.info('Login: No user record found')
+            error = 'Username not found'
+            return render_template('login.htm', error=error)
         else:
             password = result['password']
 
             if sha256_crypt.verify(password_candidate, password):
-                app.logger.info('Password matched')
+                app.logger.info('Login: Password matched')
+
+                session['is_logged_in'] = True
+                session['username'] = username
+                flash('You are now logged in', 'success')
+            
+                return redirect(url_for('dashboard'))
+            else:
+                error = 'The username and password entered are incorrect.  Please try again.'
+                return render_template('login.htm', error=error)
 
 
     return render_template('login.htm')
+
+
+def is_logged_in(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if 'is_logged_in' in session:
+            return f(*args, **kwargs)
+        else:
+            flash('Unauthorized, please log in', 'danger')
+            return redirect(url_for('login'))
+    return wrap
+
+
+
+@app.route('/dashboard')
+@is_logged_in
+def dashboard():
+    return render_template('dashboard.htm')
+
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('You are now logged out', 'success')
+    return redirect(url_for('login'))
+
 
 
 if __name__ == '__main__':
